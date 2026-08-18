@@ -1,0 +1,16 @@
+{
+  "name": "remote-shell",
+  "description": "Persistent SSH shell sessions: a subagent uses a remote machine as if it were local, keeping cd and environment across calls.",
+  "version": "0.1.0",
+  "mcpServers": {
+    "remote-shell": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/server/mcp_server.py"
+      ]
+    }
+  },
+  "author": {
+    "name": "zomars"
+  }
+}
