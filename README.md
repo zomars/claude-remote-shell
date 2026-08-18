@@ -9,9 +9,16 @@ every time and loses all state.
 
 ## Install
 
+Clone it into `~/.claude/skills/remote-shell`. It loads by itself in the next
+session as `remote-shell@skills-dir`; there is nothing to enable.
+
 ```bash
-claude --plugin-dir /path/to/remote-shell
+claude plugin details remote-shell
 ```
+
+The inventory has to read 1 skill, 1 agent and **1 MCP server**. If the MCP
+server count is zero, see the third point below — the plugin will look installed
+and give you no tools.
 
 ## Tools
 
@@ -40,10 +47,11 @@ decisions solve the three problems of this approach:
 3. **Commands that wait.** `shell_run` takes a timeout; when it expires it
    returns what was read, marked incomplete, and the session stays alive.
 
-## Two things you only learn by measuring
+## Three things you only learn by measuring
 
-Both were found by logging the real JSON-RPC traffic with `RSHELL_LOG`, not by
-reading documentation.
+None of them is written down anywhere. The first two came out of logging the
+real JSON-RPC traffic with `RSHELL_LOG`; the third, out of comparing the
+inventories of two test plugins.
 
 **Tool names carry a double prefix.** Not `mcp__remote-shell__shell_run` but
 `mcp__plugin_remote-shell_remote-shell__shell_run`, following
@@ -57,10 +65,18 @@ client stays on that path, never sends `initialize`, loops on `tools/list`, and
 the classic handshake and everything works. It is commented in the source so
 nobody "fixes" it by accident.
 
+**A skills-directory plugin ignores `mcpServers` inside `plugin.json`.** The
+server has to be declared in a `.mcp.json` at the plugin root. With the inline
+form the skill and the agent still load, `claude plugin details` reports
+`MCP servers (0)`, and an agent told to open a session finds no tool to open it
+with and quietly falls back to plain `ssh`. No error, anywhere. Verified with
+two test plugins identical but for that key: inline gave 0 servers, `.mcp.json`
+gave 1.
+
 ## Debugging
 
 ```bash
-RSHELL_LOG=/tmp/mcp.log claude --plugin-dir .    # log all JSON-RPC
+RSHELL_LOG=/tmp/mcp.log claude                   # log all JSON-RPC
 python3 server/test_core.py local                # 25 core tests, no network
 python3 server/test_core.py user@host            # the same against a real machine
 ```
